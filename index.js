@@ -30,6 +30,9 @@ var Index = {
     startLocation(){
         BaiduLocationModule.startLocation();
     },
+    restartLocation() {
+        BaiduLocationModule.restartLocation();
+    },
     stopLocation(){
         BaiduLocationModule.stopLocation();
     },
