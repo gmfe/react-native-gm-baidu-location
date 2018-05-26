@@ -1,10 +1,29 @@
 {
-  "name": "react-native-baidu-location",
-  "main": "BaiduLocation.js",
-  "version":"0.0.4",
-  "description": "baidu-location for react native,fork form https://github.com/1123746696/react-native-baidu-location",
+  "name": "react-native-gm-baidu-location",
+  "version": "1.0.0",
+  "description": "集成百度的定位功能，支持IOS和Android ##安装 ``` npm install react-native-baidu-location rnpm link react-native-baidu-location ```",
+  "main": "index.js",
   "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "dependencies": {
-  }
+  "keywords": [
+    "react",
+    "react-native",
+    "baidu",
+    "map",
+    "location"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gmfe/react-native-gm-baidu-location.git"
+  },
+  "author": "gmfe",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gmfe/react-native-gm-baidu-location/issues"
+  },
+  "peerDependencies": {
+    "react-native": "*"
+  },
+  "homepage": "https://github.com/gmfe/react-native-gm-baidu-location#readme"
 }
