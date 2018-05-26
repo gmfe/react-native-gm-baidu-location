@@ -12,7 +12,21 @@ var didStopLocatingUserSubscript,
     didUpdateBMKUserLocationSubscript,
     didFailToLocateUserWithErrorSubscript;
 
-var BaiduLocation = {
+var Index = {
+    init(){
+        BaiduLocationModule.init();
+    },
+    setLocationOption(option){
+        BaiduLocationModule.setLocationOption(Object.assign({
+            coorType: 'bd09ll',
+            scanSpan: 5000,
+            openGps: true,
+
+            ignoreKillProcess: false,
+            isNeedAddress: true,
+            isNeedLocationDescribe: true
+        }, option))
+    },
     startLocation(){
         BaiduLocationModule.startLocation();
     },
@@ -50,34 +64,4 @@ var BaiduLocation = {
     },
 };
 
-module.exports = BaiduLocation;
-// /***
-//  *  设定定位的最小更新距离
-//  */
-// setDistanceFilter(distanceFilter:number){
-//     BaiduLocationModule.setDistanceFilter(distanceFilter);
-// },
-// /***
-//  *  设定定位精度
-//  */
-// setDesiredAccuracy(desiredAccuracy:number){
-//     BaiduLocationModule.setDesiredAccuracy(desiredAccuracy);
-// },
-// /***
-//  *  设定最小更新角度。默认为1度
-//  */
-// setHeadingFilter(headingFilter:number){
-//     BaiduLocationModule.setHeadingFilter(headingFilter);
-// },
-// /***
-//  *  指定定位是否会被系统自动暂停。默认为YES,只在iOS 6.0之后起作用。
-//  */
-// setPausesLocationUpdatesAutomatically(canPause:boolean){
-//     BaiduLocationModule.setPausesLocationUpdatesAutomatically(canPause);
-// },
-// /***
-//  *  指定定位：是否允许后台定位更新。默认为NO。
-//  */
-// setAllowsBackgroundLocationUpdates(isAllows:boolean){
-//     BaiduLocationModule.setAllowsBackgroundLocationUpdates(isAllows);
-// },
+module.exports = Index;
