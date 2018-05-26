@@ -1,0 +1,10 @@
+{
+  "name": "react-native-baidu-location",
+  "main": "BaiduLocation.js",
+  "version":"0.0.4",
+  "description": "baidu-location for react native,fork form https://github.com/1123746696/react-native-baidu-location",
+  "scripts": {
+  },
+  "dependencies": {
+  }
+}
