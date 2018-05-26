@@ -1,6 +1,6 @@
 {
   "name": "react-native-gm-baidu-location",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "集成百度的定位功能，支持IOS和Android ##安装 ``` npm install react-native-baidu-location rnpm link react-native-baidu-location ```",
   "main": "index.js",
   "scripts": {
