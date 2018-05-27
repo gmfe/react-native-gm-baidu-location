@@ -1,5 +1,8 @@
 package com.example.rctbaidulocation;
 
+import android.app.Notification;
+import android.content.Intent;
+import android.os.Build;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -8,7 +11,6 @@ import com.baidu.location.BDLocation;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -20,7 +22,7 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BaiduLocationModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
+public class BaiduLocationModule extends ReactContextBaseJavaModule {
     protected static final String TAG = BaiduLocationModule.class.getSimpleName();
     protected static final String WillStartLocatingUser = "WillStartLocatingUser";
     protected static final String DidStopLocatingUser = "DidStopLocatingUser";
@@ -32,6 +34,8 @@ public class BaiduLocationModule extends ReactContextBaseJavaModule implements L
     private ReactApplicationContext mReactContext;
     private BDLocationListener listener = new BDLocationListener();
     private LocationClient mLocationClient = null;
+    private NotificationUtils mNotificationUtils;
+    private Notification notification;
 
     @Override
     public String getName() {
@@ -58,6 +62,24 @@ public class BaiduLocationModule extends ReactContextBaseJavaModule implements L
             mLocationClient = new LocationClient(mReactContext.getBaseContext());     //声明LocationClient类
         }
         mLocationClient.registerLocationListener(listener);
+
+        if (Build.VERSION.SDK_INT >= 26) {
+            mNotificationUtils = new NotificationUtils(mReactContext);
+            Notification.Builder builder2 = mNotificationUtils.getAndroidChannelNotification
+                    ("适配android 8限制后台定位功能", "正在后台定位");
+            notification = builder2.build();
+        } else {
+            //获取一个Notification构造器
+            Notification.Builder builder = new Notification.Builder(mReactContext.getBaseContext());
+            Intent nfIntent = new Intent();
+
+            builder.setContentTitle("后台定位功能") // 设置下拉列表里的标题
+                    .setSmallIcon(R.drawable.ic_launcher) // 设置状态栏内的小图标
+                    .setContentText("正在后台定位") // 设置上下文内容
+                    .setWhen(System.currentTimeMillis()); // 设置该通知发生的时间
+
+            notification = builder.build(); // 获取构建好的Notification
+        }
     }
 
     private class BDLocationListener extends BDAbstractLocationListener {
@@ -134,10 +156,13 @@ public class BaiduLocationModule extends ReactContextBaseJavaModule implements L
             sendDidStopEvent();
         }
     }
-    
-    private void unRegisterLocationListener() {
-        if (mLocationClient != null) {
-            mLocationClient.unRegisterLocationListener(listener);
+
+    @ReactMethod
+    public void enableLocInForeground(boolean b) {
+        if (b) {
+            mLocationClient.enableLocInForeground(1, notification);
+        } else {
+            mLocationClient.disableLocInForeground(b);
         }
     }
 
@@ -194,20 +219,5 @@ public class BaiduLocationModule extends ReactContextBaseJavaModule implements L
         } else {
             Log.i(TAG, "not hasActiveCatalystInstance");
         }
-    }
-
-    @Override
-    public void onHostResume() {
-
-    }
-
-    @Override
-    public void onHostPause() {
-
-    }
-
-    @Override
-    public void onHostDestroy() {
-        unRegisterLocationListener();
     }
 }
