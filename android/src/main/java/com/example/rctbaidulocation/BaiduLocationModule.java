@@ -1,15 +1,16 @@
 package com.example.rctbaidulocation;
 
+import android.app.Notification;
+import android.content.Intent;
+import android.os.Build;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
-import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -31,8 +32,10 @@ public class BaiduLocationModule extends ReactContextBaseJavaModule {
     protected static final String DidFailToLocateUserWithError = "DidFailToLocateUserWithError";
 
     private ReactApplicationContext mReactContext;
-    private LocationClientOption option = null;
+    private BDLocationListener listener = new BDLocationListener();
     private LocationClient mLocationClient = null;
+    private NotificationUtils mNotificationUtils;
+    private Notification notification;
 
     @Override
     public String getName() {
@@ -57,40 +60,38 @@ public class BaiduLocationModule extends ReactContextBaseJavaModule {
     public void init() {
         if (mLocationClient == null) {
             mLocationClient = new LocationClient(mReactContext.getBaseContext());     //声明LocationClient类
-            mLocationClient.setLocOption(getDefaultLocationClientOption());
         }
-        mLocationClient.registerLocationListener(new BDAbstractLocationListener() {
-            @Override
-            public void onReceiveLocation(BDLocation bdLocation) {
-                if (null != bdLocation && bdLocation.getLocType() != BDLocation.TypeServerError) {
-                    sendSuccessEvent(bdLocation);
-                } else {
-                    sendFailureEvent(bdLocation);
-                }
-            }
-        });
+        mLocationClient.registerLocationListener(listener);
+
+        if (Build.VERSION.SDK_INT >= 26) {
+            mNotificationUtils = new NotificationUtils(mReactContext);
+            Notification.Builder builder2 = mNotificationUtils.getAndroidChannelNotification
+                    ("适配android 8限制后台定位功能", "正在后台定位");
+            notification = builder2.build();
+        } else {
+            //获取一个Notification构造器
+            Notification.Builder builder = new Notification.Builder(mReactContext.getBaseContext());
+            Intent nfIntent = new Intent();
+
+            builder.setContentTitle("后台定位功能") // 设置下拉列表里的标题
+                    .setSmallIcon(R.drawable.ic_launcher) // 设置状态栏内的小图标
+                    .setContentText("正在后台定位") // 设置上下文内容
+                    .setWhen(System.currentTimeMillis()); // 设置该通知发生的时间
+
+            notification = builder.build(); // 获取构建好的Notification
+        }
     }
 
-    /***
-     *
-     * @return DefaultLocationClientOption  默认O设置
-     */
-    private LocationClientOption getDefaultLocationClientOption() {
-        LocationClientOption option = new LocationClientOption();
-        option.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy);//可选，默认高精度，设置定位模式，高精度，低功耗，仅设备
-        option.setCoorType("bd09ll");//可选，默认gcj02，设置返回的定位结果坐标系，如果配合百度地图使用，建议设置为bd09ll;
-        option.setScanSpan(3000);//可选，默认0，即仅定位一次，设置发起连续定位请求的间隔需要大于等于1000ms才是有效的
-        option.setIsNeedAddress(true);//可选，设置是否需要地址信息，默认不需要
-        option.setIsNeedLocationDescribe(true);//可选，设置是否需要地址描述
-        option.setNeedDeviceDirect(false);//可选，设置是否需要设备方向结果
-        option.setLocationNotify(false);//可选，默认false，设置是否当gps有效时按照1S1次频率输出GPS结果
-        option.setIgnoreKillProcess(true);//可选，默认true，定位SDK内部是一个SERVICE，并放到了独立进程，设置是否在stop的时候杀死这个进程，默认不杀死
-        option.setIsNeedLocationDescribe(true);//可选，默认false，设置是否需要位置语义化结果，可以在BDLocation.getLocationDescribe里得到，结果类似于“在北京天安门附近”
-        option.setIsNeedLocationPoiList(true);//可选，默认false，设置是否需要POI结果，可以在BDLocation.getPoiList里得到
-        option.SetIgnoreCacheException(false);//可选，默认false，设置是否收集CRASH信息，默认收集
-        option.setOpenGps(true);//可选，默认false，设置是否开启Gps定位
-        option.setIsNeedAltitude(false);//可选，默认false，设置定位时是否需要海拔信息，默认不需要，除基础定位版本都可用
-        return option;
+    private class BDLocationListener extends BDAbstractLocationListener {
+
+        @Override
+        public void onReceiveLocation(BDLocation bdLocation) {
+            if (null != bdLocation && bdLocation.getLocType() != BDLocation.TypeServerError) {
+                sendSuccessEvent(bdLocation);
+            } else {
+                sendFailureEvent(bdLocation);
+            }
+        }
     }
 
     @ReactMethod
@@ -137,11 +138,15 @@ public class BaiduLocationModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void startLocation() {
-        mLocationClient.start();
+        if (mLocationClient != null) {
+            mLocationClient.start();
+        }
     }
 
     public void restartLocation() {
-        mLocationClient.restart();
+        if (mLocationClient != null) {
+            mLocationClient.restart();
+        }
     }
 
     @ReactMethod
@@ -149,6 +154,15 @@ public class BaiduLocationModule extends ReactContextBaseJavaModule {
         if (mLocationClient != null) {
             mLocationClient.stop();
             sendDidStopEvent();
+        }
+    }
+
+    @ReactMethod
+    public void enableLocInForeground(boolean b) {
+        if (b) {
+            mLocationClient.enableLocInForeground(1, notification);
+        } else {
+            mLocationClient.disableLocInForeground(b);
         }
     }
 

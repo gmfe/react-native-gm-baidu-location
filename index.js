@@ -36,16 +36,15 @@ var Index = {
     stopLocation(){
         BaiduLocationModule.stopLocation();
     },
+    enableLocInForeground(bol) {
+        BaiduLocationModule.enableLocInForeground(bol);
+    },
 
     didStopLocatingUser(handler: Function){
         didStopLocatingUserSubscript = this.addEventListener(BaiduLocationModule.DidStopLocatingUser, handler);
     },
     didUpdateBMKUserLocation(handler: Function){
         didUpdateBMKUserLocationSubscript = this.addEventListener(BaiduLocationModule.DidUpdateBMKUserLocation, message => {
-            //处于后台时，拦截收到的消息
-            if(AppState.currentState === 'background') {
-                return;
-            }
             handler(message);
         });
     },
