@@ -18,7 +18,7 @@ var Index = {
     },
     setLocationOption(option){
         BaiduLocationModule.setLocationOption(Object.assign({
-            coorType: 'bd09ll',
+            coorType: 'gcj02',
             scanSpan: 5000,
             openGps: true,
 
